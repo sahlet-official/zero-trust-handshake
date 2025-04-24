@@ -1,17 +1,17 @@
-# name: Test
+name: Test
 
-# permissions:
-#   contents: write
+permissions:
+  contents: write
 
-# on:
-#   workflow_dispatch:
+on:
+  workflow_dispatch:
 
-# jobs:
-#   Test:
-#     runs-on: ubuntu-latest
+jobs:
+  Test:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Prepare for handshake (expiration fail)
-#         uses: sahlet-official/zero-trust-handshake@latest
-#         with:
-#           expiration_time: 0
+    steps:
+      # - name: Prepare for handshake (expiration fail)
+      #   uses: sahlet-official/zero-trust-handshake@latest
+      #   with:
+      #     expiration_time: 0
