@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Prepare for handshake (expiration fail)
-      #   uses: sahlet-official/zero-trust-handshake@latest
-      #   with:
-      #     expiration_time: 0
+      - name: Prepare for handshake (expiration fail)
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          expiration_time: 0

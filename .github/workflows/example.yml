@@ -10,16 +10,13 @@ jobs:
   prepare-for-handshake:
     runs-on: ubuntu-latest
 
+    outputs:
+      jwt: ${{ steps.handshake.outputs.jwt }}
+
     steps:
       - name: Prepare for handshake
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
-
-      - name: 
-        uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@main
-        with:
-          jwt: ${{ steps.handshake.outputs.jwt }}
-          caller: "sahlet-official/zero-trust-handshake"
 
   workflow-call:
     name: Call other workflow (it can be workflow in another repo)
