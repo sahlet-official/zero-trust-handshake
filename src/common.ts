@@ -152,7 +152,7 @@ export async function setConfig(branch: string, octokit: OctokitType, config: Co
     }
   } catch (e: any) {
     if (e.status === 404) {
-      core.info(`➕📝 Creating config`);
+      core.info(`➕🔄📝 Creating config`);
     } else {
       throw e;
     }
@@ -169,7 +169,7 @@ export async function setConfig(branch: string, octokit: OctokitType, config: Co
       sha: fileSha,
     });
 
-    core.info(`✅🔄 config ${fileSha ? 'updated' : 'created'}`);
+    core.info(`✅${fileSha ? '🔄' : '➕'}📝 Config ${fileSha ? 'updated' : 'created'}`);
 
   } catch (e: any) {
     core.info(`❌📝 couldn't update config: ${e.message}`);
