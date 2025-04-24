@@ -1,4 +1,3 @@
-import { config } from 'process';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import * as common from'./common';
@@ -23,17 +22,10 @@ async function run() {
   const { repo, owner } = github.context.repo;
 
   try {
-    let config: common.Config | null = null;
-    try {
-      config = await common.getConfig(branch, octokit);
-    } catch (err: any) {
-      core.error("❌ Cant get receivers from config 111111");
-      core.error(err);
-    }
-
-    core.info(`Receivers are: [${config?.receivers.toString()}]`);
+    const config = await common.getConfig(branch, octokit);
+    core.info(`Receivers are: [${config.receivers.toString()}]`);
   } catch (err: any) {
-    core.error("❌ Cant get receivers from config 22222222");
+    core.error("❌ Cant get receivers from config");
     core.error(err);
   }
 
