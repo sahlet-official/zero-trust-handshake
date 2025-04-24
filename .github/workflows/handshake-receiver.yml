@@ -14,7 +14,7 @@ jobs:
   handshake-insurance:
     name: Respond to handshake
     if: ${{ inputs.caller }} == "sahlet-official/zero-trust-handshake"
-    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@main
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
       jwt: ${{ inputs.jwt }}
       handshake_receiver: "Example receiver"
