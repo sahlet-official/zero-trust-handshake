@@ -30148,6 +30148,8 @@ async function run() {
     const { repo, owner } = github.context.repo;
     try {
         const config = await common.getConfig(branch, octokit);
+        core.info("Got config");
+        core.info(JSON.stringify(config, null, 2));
         core.info(`Receivers are: [${config.receivers.toString()}]`);
     }
     catch (err) {
