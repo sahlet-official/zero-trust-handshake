@@ -23,12 +23,17 @@ async function run() {
   const { repo, owner } = github.context.repo;
 
   try {
-    const config = await common.getConfig(branch, octokit);
-    core.info("Got config");
-    core.info(JSON.stringify(config, null, 2));
-    core.info(`Receivers are: [${config.receivers.toString()}]`);
+    let config: common.Config | null = null;
+    try {
+      config = await common.getConfig(branch, octokit);
+    } catch (err: any) {
+      core.error("❌ Cant get receivers from config 111111");
+      core.error(err);
+    }
+
+    core.info(`Receivers are: [${config?.receivers.toString()}]`);
   } catch (err: any) {
-    core.error("❌ Cant get receivers from config");
+    core.error("❌ Cant get receivers from config 22222222");
     core.error(err);
   }
 
