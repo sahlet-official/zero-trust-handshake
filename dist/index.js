@@ -36474,10 +36474,10 @@ async function run() {
     const mode = core.getInput('mode') || 'create';
     const octokit = github.getOctokit(token);
     if (mode === 'create') {
-        prepareForHandshake(octokit);
+        await prepareForHandshake(octokit);
     }
     else if (mode === 'check') {
-        checkIfISentHandshake(octokit);
+        await checkIfISentHandshake(octokit);
     }
     else {
         core.setFailed("❌ Unknown mode");

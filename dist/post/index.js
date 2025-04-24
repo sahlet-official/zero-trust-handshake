@@ -30147,18 +30147,11 @@ async function run() {
     const octokit = github.getOctokit(token);
     const { repo, owner } = github.context.repo;
     try {
-        let config = null;
-        try {
-            config = await common.getConfig(branch, octokit);
-        }
-        catch (err) {
-            core.error("❌ Cant get receivers from config 111111");
-            core.error(err);
-        }
-        core.info(`Receivers are: [${config?.receivers.toString()}]`);
+        const config = await common.getConfig(branch, octokit);
+        core.info(`Receivers are: [${config.receivers.toString()}]`);
     }
     catch (err) {
-        core.error("❌ Cant get receivers from config 22222222");
+        core.error("❌ Cant get receivers from config");
         core.error(err);
     }
     core.info(`♻️ Cleaning handshake data...`);
