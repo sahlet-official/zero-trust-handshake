@@ -1,0 +1,31 @@
+name: "Zero Trust Handshake"
+description: "Implements automation of authentication of workflow call (needs write access to repo)"
+inputs:
+  mode:
+    description: "create/check"
+    default: "create"
+  jwt:
+    description: "jwt created on create stage"
+    default: ""
+  handshake_receiver:
+    description: "Info (name) of the service who receives request for handshake"
+    default: "unknown"
+  github_token:
+    description: "GitHub Token"
+    default: ${{ github.token }}
+  max_usage_count:
+    description: "Maximum count of this handshake"
+    default: "1"
+  expiration_time:
+    description: "Handshake expiration time in minutes"
+    default: "10"
+outputs:
+  jwt:
+    description: "jwt created on create stage"
+  check_status:
+    description: "true - checked / false - not checked"
+runs:
+  using: "node20"
+  main: "dist/index.js"
+  post: "dist/post/index.js"
+  post-if: always()

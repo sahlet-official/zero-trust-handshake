@@ -1,0 +1,62 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3)'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with ncc
+        run: npm run prepare
+
+      - name: Commit dist
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add dist
+          git commit -m "chore: build for release v${{ github.event.inputs.version }}" || echo "No changes to commit"
+
+      - name: Sync and Push Commit
+        run: |
+          git fetch origin
+          git pull --rebase
+          git push origin HEAD
+
+      - name: Create Git tags
+        run: |
+          git tag -a v${{ github.event.inputs.version }} -m "Release v${{ github.event.inputs.version }}"
+          git push origin v${{ github.event.inputs.version }}
+
+          git tag -f v0 -m "Release v${{ github.event.inputs.version }}"
+          git push --force origin v0
+
+          git fetch origin --tags
+          git tag -f latest -m "Release v${{ github.event.inputs.version }}"
+          git push --force origin latest
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
+          generate_release_notes: true

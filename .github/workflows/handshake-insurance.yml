@@ -1,0 +1,34 @@
+name: Handshake insurance
+
+permissions:
+  contents: write
+
+on:
+  workflow_call:
+    inputs:
+      jwt:
+        required: true
+        type: string
+      handshake_receiver:
+        required: true
+        type: string
+    outputs:
+      check_status:
+        description: "true - checked / false - not checked"
+        value: ${{ jobs.handshake-insurance.outputs.check_status }}
+
+jobs:
+  handshake-insurance:
+    runs-on: ubuntu-latest
+
+    outputs:
+      check_status: ${{ steps.insurance.outputs.check_status }}
+
+    steps:
+      - name: Check if I sent handshake
+        id: insurance
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          mode: check
+          jwt: ${{ inputs.jwt }}
+          handshake_receiver: ${{ inputs.handshake_receiver }}

@@ -1,0 +1,23 @@
+name: Handshake receiver
+
+on:
+  workflow_call:
+    inputs:
+      jwt:
+        required: true
+        type: string
+      caller:
+        required: true
+        type: string
+
+jobs:
+  handshake-receiver:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Respond to handshake
+        if: ${{ inputs.caller }} == "sahlet-official/zero-trust-handshake"
+        uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@main
+        with:
+          jwt: ${{ inputs.jwt }}
+          handshake_receiver: "Example receiver"
