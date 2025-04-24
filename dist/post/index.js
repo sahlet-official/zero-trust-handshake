@@ -30063,7 +30063,7 @@ async function setConfig(branch, octokit, config) {
     }
     catch (e) {
         if (e.status === 404) {
-            core.info(`➕📝 Creating config`);
+            core.info(`➕🔄📝 Creating config`);
         }
         else {
             throw e;
@@ -30079,7 +30079,7 @@ async function setConfig(branch, octokit, config) {
             content: updatedContent,
             sha: fileSha,
         });
-        core.info(`✅🔄 config ${fileSha ? 'updated' : 'created'}`);
+        core.info(`✅${fileSha ? '🔄' : '➕'}📝 Config ${fileSha ? 'updated' : 'created'}`);
     }
     catch (e) {
         core.info(`❌📝 couldn't update config: ${e.message}`);
@@ -30148,6 +30148,8 @@ async function run() {
     const { repo, owner } = github.context.repo;
     try {
         const config = await common.getConfig(branch, octokit);
+        core.info("Got config");
+        core.info(JSON.stringify(config, null, 2));
         core.info(`Receivers are: [${config.receivers.toString()}]`);
     }
     catch (err) {
