@@ -148,3 +148,42 @@ jobs:
           token: ${{ needs.test04-wrong-signature.outputs.token }}
 
 # ----------------------------------------------------------------------------------------------------------------
+
+  test05-expiration-time:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+
+    outputs:
+      token: ${{ steps.handshake.outputs.token }}
+
+    steps:
+      - name: Prepare for handshake
+        id: handshake
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          sender: "sahlet-official/zero-trust-handshake"
+          destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
+          expiration_time: 0
+
+  test05-workflow-call:
+    needs: test05-expiration-time
+    if: ${{ always() && needs.test01-wrong-destination.result == 'success' }}
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    secrets:
+      token: ${{ needs.test05-expiration-time.outputs.token }}
+
+  test05-handshake-cleanup:
+    runs-on: ubuntu-latest
+    needs:
+      - test05-expiration-time
+      - test05-workflow-call
+    if: ${{ always() && needs.test05-expiration-time.result == 'success' }}
+
+    steps:
+      - name: Handshake cleanup
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          mode: cleanup
+          token: ${{ needs.test05-expiration-time.outputs.token }}
+
+# ----------------------------------------------------------------------------------------------------------------
