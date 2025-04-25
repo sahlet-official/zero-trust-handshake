@@ -131,6 +131,17 @@ async function checkIfISentHandshake(octokit: OctokitType) {
   }
 
   {
+    // check that config exists
+    const exist = await common.checkIfConfigExists(branch, octokit);
+    
+    if (!exist) {
+      core.info("❌🤝 Handshake failed");
+      core.setOutput('check_status', false);
+      return;
+    }
+  }
+
+  {
     let locked = false;
     
     for (let index = 0; index < MAX_LOCK_TRIES; index++) {
@@ -179,7 +190,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
         if (error.name === 'TokenExpiredError') {
           core.error("📛 Token expired");
         } else if (error.name === 'JsonWebTokenError') {
-          core.error("📛📝 Token sign error");
+          core.error("📛📝 Token signature error");
         } else if (error.name === 'NotBeforeError') {
           core.error("📛 NotBeforeError: Token is not active yet (nbf)");
         } else {

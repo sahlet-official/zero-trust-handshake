@@ -176,3 +176,25 @@ export async function setConfig(branch: string, octokit: OctokitType, config: Co
     throw e;
   }
 }
+
+export async function checkIfConfigExists(branch: string, octokit: OctokitType): Promise<boolean> {
+  const { repo, owner } = github.context.repo;
+
+  try {
+    const fileResponse = await octokit.rest.repos.getContent({
+      owner,
+      repo,
+      path: CONFIG_FILE,
+      ref: branch,
+    });
+  } catch(err: any) {
+    //file or branch doesn't exist
+    if (err.status === 404) {
+      return false;
+    }
+
+    throw err;
+  }
+
+  return true;
+}
