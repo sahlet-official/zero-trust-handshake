@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import * as common from'./common';
+import * as utils from'./utils';
 
 const BRANCH_PREFIX = 'tmp_zero_trust_handshake_branch_';
 const MAX_LOCK_TRIES = 5;
@@ -15,6 +15,8 @@ import jwt from "jsonwebtoken";
 async function prepareForHandshake(octokit: OctokitType) {
   const max_usage_count = Number(core.getInput('max_usage_count'));
   const expiration_time = Number(core.getInput('expiration_time'));
+  const sender = core.getInput('sender');
+  const destination = core.getInput('destination');
   const { repo, owner } = github.context.repo;
 
   let branch = "";
@@ -38,7 +40,7 @@ async function prepareForHandshake(octokit: OctokitType) {
 
     while(true)
     {
-      branch_postfix = common.randomString(10);
+      branch_postfix = utils.randomString(10);
       branch = `${BRANCH_PREFIX}${branch_postfix}`;
   
       try {
@@ -73,8 +75,10 @@ async function prepareForHandshake(octokit: OctokitType) {
       }
     });
 
-    const payload: common.Payload = {
-      branch_postfix: branch_postfix
+    const payload: utils.Payload = {
+      branch_postfix: branch_postfix,
+      sender: sender,
+      destination: destination
     };
     
     let token = jwt.sign(payload, privateKey, {
@@ -85,7 +89,7 @@ async function prepareForHandshake(octokit: OctokitType) {
     //to make it possible to pass it through github job outputs
     token = Buffer.from(token).toString("base64");
 
-    const config: common.Config = {
+    const config: utils.Config = {
       public_key: publicKey,
       locked: false,
       usage_count: 0,
@@ -97,7 +101,7 @@ async function prepareForHandshake(octokit: OctokitType) {
       receivers: [],
     };
 
-    await common.setConfig(branch, octokit, config);
+    await utils.setConfig(branch, octokit, config);
 
     core.setOutput('jwt', token);
     core.saveState('branch', branch);
@@ -113,26 +117,25 @@ async function checkIfISentHandshake(octokit: OctokitType) {
   const token = core.getInput('jwt');
   const jwtoken = Buffer.from(token, "base64").toString("utf-8");
   const handshake_receiver = core.getInput('handshake_receiver');
-  const { repo, owner } = github.context.repo;
 
   let branch = "";
   let branch_postfix = "";
 
   {
     try {
-      const payload = jwt.decode(jwtoken) as common.Payload;
+      const payload = jwt.decode(jwtoken) as utils.Payload;
 
       branch_postfix = payload.branch_postfix;
       branch = `${BRANCH_PREFIX}${branch_postfix}`;
     } catch (err) {
-      core.info("❌🤝 something wrong with payload");
+      core.info("❌🤝 something wrong with token payload");
       throw err;
     }
   }
 
   {
     // check that config exists
-    const exist = await common.checkIfConfigExists(branch, octokit);
+    const exist = await utils.checkIfConfigExists(branch, octokit);
     
     if (!exist) {
       core.setOutput('check_status', false);
@@ -147,7 +150,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
     for (let index = 0; index < MAX_LOCK_TRIES; index++) {
       core.info("🙏 try lock config");
 
-      if (await common.tryLockConfig(branch, octokit)) {
+      if (await utils.tryLockConfig(branch, octokit)) {
         locked = true;
         break;
       }
@@ -163,7 +166,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
   }
 
   try {
-    let config: common.Config = await common.getConfig(branch, octokit);
+    let config: utils.Config = await utils.getConfig(branch, octokit);
 
     let check_status: boolean = false;
 
@@ -175,7 +178,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
 
         config.usage_count += 1;
 
-        const receiverInfo: common.ReceiverInfo = {
+        const receiverInfo: utils.ReceiverInfo = {
           receiver_name: handshake_receiver,
           timestamp: new Date().toISOString(),
         };
@@ -203,7 +206,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
     }
 
     config.locked = false;
-    await common.setConfig(branch, octokit, config);
+    await utils.setConfig(branch, octokit, config);
 
     core.setOutput('check_status', check_status);
 
@@ -217,15 +220,80 @@ async function checkIfISentHandshake(octokit: OctokitType) {
     
   } catch (err: any) {
     try {
-      let config = await common.getConfig(branch, octokit);
+      let config = await utils.getConfig(branch, octokit);
       config.locked = false;
-      await common.setConfig(branch, octokit, config);
+      await utils.setConfig(branch, octokit, config);
     } catch (e: any) {
       core.info("❌🔓 couldn't make emergency unlock");
       core.error(e);
     }
 
     throw err;
+  }
+}
+
+async function extractDataFromToken(octokit: OctokitType) {
+  const token = core.getInput('jwt');
+  const jwtoken = Buffer.from(token, "base64").toString("utf-8");
+
+  let sender = "";
+  let destination = "";
+
+  {
+    try {
+      const payload = jwt.decode(jwtoken) as utils.Payload;
+
+      sender = payload.sender;
+      destination = payload.destination;
+    } catch (err) {
+      core.info("❌🤝 something wrong with token payload");
+      throw err;
+    }
+  }
+
+  core.setOutput('sender', sender);
+  core.setOutput('destination', destination);
+}
+
+async function cleanup(octokit: OctokitType) {
+  const token = core.getInput('jwt');
+  const jwtoken = Buffer.from(token, "base64").toString("utf-8");
+  const { repo, owner } = github.context.repo;
+
+  let branch = "";
+  let branch_postfix = "";
+
+  {
+    try {
+      const payload = jwt.decode(jwtoken) as utils.Payload;
+
+      branch_postfix = payload.branch_postfix;
+      branch = `${BRANCH_PREFIX}${branch_postfix}`;
+    } catch (err) {
+      core.info("❌🤝 something wrong with token payload");
+      throw err;
+    }
+  }
+
+  try {
+    const config = await utils.getConfig(branch, octokit);
+    core.info(`Receivers were: [${config.receivers.toString()}]`);
+  } catch (err: any) {
+    core.error("❌ Cant get receivers from config");
+    core.error(err);
+  }
+
+  core.info(`♻️ Cleaning handshake data...`);
+  try {
+    await octokit.rest.git.deleteRef({ owner, repo, ref: `heads/${branch}` });
+    core.info(`✅♻️🤝 Handshake data cleaned`);
+  } catch (err: any) {
+    if (err.status === 422) {
+      const message = `❌♻️🤝 Handshake data was already cleaned or not found.`;
+      core.setFailed(message);
+    } else {
+      throw err;
+    }
   }
 }
 
@@ -239,6 +307,10 @@ async function run() {
     await prepareForHandshake(octokit);
   } else if (mode === 'check') {
     await checkIfISentHandshake(octokit);
+  } else if (mode === 'extract') {
+    await extractDataFromToken(octokit);
+  } else if (mode === 'cleanup') {
+    await cleanup(octokit);
   } else {
     core.setFailed("❌ Unknown mode");
   }

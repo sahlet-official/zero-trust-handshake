@@ -7,7 +7,7 @@ on:
         required: true
         type: string
     secrets:
-      jwt:
+      token:
         required: true
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
     with:
       handshake_receiver: "Example receiver"
     secrets:
-      jwt: ${{ secrets.jwt }}
+      token: ${{ secrets.token }}
 
   request-processing:
     runs-on: ubuntu-latest

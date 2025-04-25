@@ -24,6 +24,8 @@ export type Config = {
 
 export type Payload = {
   branch_postfix: string;
+  sender: string;
+  destination: string;
 };
 
 export function randomString(length: number): string {

@@ -11,19 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      jwt: ${{ steps.handshake.outputs.jwt }}
+      token: ${{ steps.handshake.outputs.token }}
 
     steps:
       - name: Prepare for handshake
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          sender: "sahlet-official/zero-trust-handshake"
+          destination: "sahlet-official/zero-trust-handshake"
 
   workflow-call:
     name: Call other workflow (it can be workflow in another repo)
     needs: prepare-for-handshake
     if: success()
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
-    with:
-      caller: "sahlet-official/zero-trust-handshake"
     secrets:
-      jwt: ${{ needs.prepare-for-handshake.outputs.jwt }}
+      token: ${{ needs.prepare-for-handshake.outputs.token }}
+
+  handshake-cleanup:
+    runs-on: ubuntu-latest
+    needs: workflow-call
+    if: always() && ${{ needs.prepare-for-handshake.result == 'success' }}
+
+    steps:
+      - name: Handshake cleanup
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          token: ${{ needs.prepare-for-handshake.outputs.token }}

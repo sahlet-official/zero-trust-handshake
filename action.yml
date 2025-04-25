@@ -2,10 +2,16 @@ name: "Zero Trust Handshake"
 description: "Implements automation of authentication of workflow call (needs write access to repo)"
 inputs:
   mode:
-    description: "create/check"
+    description: "create/check/extract/cleanup"
     default: "create"
-  jwt:
-    description: "jwt created on create stage"
+  sender:
+    description: "sender info - verification info"
+    default: "unknown"
+  destination:
+    description: "destination info - verification info"
+    default: "unknown"
+  token:
+    description: "token created on create stage"
     default: ""
   handshake_receiver:
     description: "Info (name) of the service who receives request for handshake"
@@ -20,12 +26,14 @@ inputs:
     description: "Handshake expiration time in minutes"
     default: "10"
 outputs:
-  jwt:
-    description: "jwt created on create stage"
+  token:
+    description: "token created on create stage"
   check_status:
     description: "true - checked / false - not checked"
+  sender:
+    description: "sender info - result of 'extract' mode"
+  destination:
+    description: "destination info - result of 'extract' mode"
 runs:
   using: "node20"
   main: "dist/index.js"
-  post: "dist/post/index.js"
-  post-if: always()
