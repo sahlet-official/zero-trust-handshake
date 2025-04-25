@@ -30,7 +30,7 @@ jobs:
             echo "iam_destination=true" >> $GITHUB_OUTPUT
           else
             echo "iam_destination=false" >> $GITHUB_OUTPUT
-            echo "I am not the destination"
+            echo "❌🤝 I am not the destination"
             exit 1
           fi
 
