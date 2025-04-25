@@ -167,7 +167,7 @@ jobs:
 
   test05-workflow-call:
     needs: test05-expiration-time
-    if: ${{ always() && needs.test01-wrong-destination.result == 'success' }}
+    if: ${{ always() && needs.test05-expiration-time.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
     secrets:
       token: ${{ needs.test05-expiration-time.outputs.token }}
