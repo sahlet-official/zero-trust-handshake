@@ -97,3 +97,53 @@ jobs:
         with:
           mode: cleanup
           token: ${{ needs.test01-wrong-destination.outputs.token }}
+
+# ----------------------------------------------------------------------------------------------------------------
+
+  test04-wrong-signature:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+
+    outputs:
+      token: ${{ steps.damage.outputs.token }}
+
+    steps:
+      - name: Prepare for handshake
+        id: handshake
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          sender: "sahlet-official/zero-trust-handshake"
+          destination: "wrong-org/wrong-repo/.github/workflows/handshake-receiver.yml@master"
+
+      - name: Damage of token signature
+        id: damage
+        run: |
+          encoded_token="${{ steps.handshake.outputs.token }}"
+          decoded_token=$(echo "$encoded_token" | base64 --decode)
+          damaged_token="$decoded_token""damage"
+          encoded_damaged_token=$(echo -n "$damaged_token" | base64)
+          echo "token=$encoded_damaged_token" >> $GITHUB_OUTPUT
+          echo "token=$encoded_damaged_token"
+
+  test04-workflow-call:
+    needs: test04-wrong-signature
+    if: ${{ always() && needs.test04-wrong-signature.result == 'success' }}
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    secrets:
+      token: ${{ needs.test04-wrong-signature.outputs.token }}
+
+  test04-handshake-cleanup:
+    runs-on: ubuntu-latest
+    needs:
+      - test04-wrong-signature
+      - test04-workflow-call
+    if: ${{ always() && needs.test04-wrong-signature.result == 'success' }}
+
+    steps:
+      - name: Handshake cleanup
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          mode: cleanup
+          token: ${{ needs.test04-wrong-signature.outputs.token }}
+
+# ----------------------------------------------------------------------------------------------------------------
