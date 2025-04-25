@@ -123,7 +123,12 @@ async function checkIfISentHandshake(octokit: OctokitType) {
 
   {
     try {
+      core.info("token = " + token);
+      core.info("jwtoken = " + jwtoken);
+
       const payload = jwt.decode(jwtoken) as utils.Payload;
+
+      core.info("payload = " + JSON.stringify(payload, null, 2));
 
       branch_postfix = payload.branch_postfix;
       branch = `${BRANCH_PREFIX}${branch_postfix}`;
