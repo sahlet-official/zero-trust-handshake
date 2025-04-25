@@ -29958,6 +29958,7 @@ exports.randomString = randomString;
 exports.getConfig = getConfig;
 exports.tryLockConfig = tryLockConfig;
 exports.setConfig = setConfig;
+exports.checkIfConfigExists = checkIfConfigExists;
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
 exports.CONFIG_FILE = 'tmp_handshake_config_file_123456.json';
@@ -30085,6 +30086,25 @@ async function setConfig(branch, octokit, config) {
         core.info(`❌📝 couldn't update config: ${e.message}`);
         throw e;
     }
+}
+async function checkIfConfigExists(branch, octokit) {
+    const { repo, owner } = github.context.repo;
+    try {
+        const fileResponse = await octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path: exports.CONFIG_FILE,
+            ref: branch,
+        });
+    }
+    catch (err) {
+        //file or branch doesn't exist
+        if (err.status === 404) {
+            return false;
+        }
+        throw err;
+    }
+    return true;
 }
 
 

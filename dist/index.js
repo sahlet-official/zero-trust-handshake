@@ -36117,6 +36117,7 @@ exports.randomString = randomString;
 exports.getConfig = getConfig;
 exports.tryLockConfig = tryLockConfig;
 exports.setConfig = setConfig;
+exports.checkIfConfigExists = checkIfConfigExists;
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
 exports.CONFIG_FILE = 'tmp_handshake_config_file_123456.json';
@@ -36244,6 +36245,25 @@ async function setConfig(branch, octokit, config) {
         core.info(`❌📝 couldn't update config: ${e.message}`);
         throw e;
     }
+}
+async function checkIfConfigExists(branch, octokit) {
+    const { repo, owner } = github.context.repo;
+    try {
+        const fileResponse = await octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path: exports.CONFIG_FILE,
+            ref: branch,
+        });
+    }
+    catch (err) {
+        //file or branch doesn't exist
+        if (err.status === 404) {
+            return false;
+        }
+        throw err;
+    }
+    return true;
 }
 
 
@@ -36400,6 +36420,15 @@ async function checkIfISentHandshake(octokit) {
         }
     }
     {
+        // check that config exists
+        const exist = await common.checkIfConfigExists(branch, octokit);
+        if (!exist) {
+            core.info("❌🤝 Handshake failed");
+            core.setOutput('check_status', false);
+            return;
+        }
+    }
+    {
         let locked = false;
         for (let index = 0; index < MAX_LOCK_TRIES; index++) {
             core.info("🙏 try lock config");
@@ -36436,7 +36465,7 @@ async function checkIfISentHandshake(octokit) {
                     core.error("📛 Token expired");
                 }
                 else if (error.name === 'JsonWebTokenError') {
-                    core.error("📛📝 Token sign error");
+                    core.error("📛📝 Token signature error");
                 }
                 else if (error.name === 'NotBeforeError') {
                     core.error("📛 NotBeforeError: Token is not active yet (nbf)");
