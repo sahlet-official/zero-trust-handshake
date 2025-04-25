@@ -121,15 +121,10 @@ jobs:
           encoded_token="${{ steps.handshake.outputs.token }}"
           decoded_token=$(echo "$encoded_token" | base64 --decode)
           damaged_token="${decoded_token}damage"
-          echo "damaged_token="
-          echo "$damaged_token"
           encoded_damaged_token=$(echo -n "$damaged_token" | base64)
           echo "token<<EOF" >> $GITHUB_OUTPUT
           echo "$encoded_damaged_token" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          echo "encoded_damaged_token="
-          echo "$encoded_damaged_token"
-
 
   test04-workflow-call:
     needs: test04-wrong-signature
