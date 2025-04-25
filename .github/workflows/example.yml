@@ -40,4 +40,5 @@ jobs:
       - name: Handshake cleanup
         uses: sahlet-official/zero-trust-handshake@latest
         with:
+          mode: cleanup
           token: ${{ needs.prepare-for-handshake.outputs.token }}

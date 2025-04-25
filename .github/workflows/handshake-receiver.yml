@@ -20,8 +20,8 @@ jobs:
         id: extraction
         uses: sahlet-official/zero-trust-handshake@latest
         with:
-          mode: "extract"
-          token: "${{ secrets.token }}"
+          mode: extract
+          token: ${{ secrets.token }}
 
       - name: Verification that I am destination
         id: verification
