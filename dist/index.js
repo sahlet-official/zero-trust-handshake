@@ -36370,7 +36370,7 @@ async function prepareForHandshake(octokit) {
             receivers: [],
         };
         await common.setConfig(branch, octokit, config);
-        core.setOutput('jwt', token);
+        core.setOutput('token', token);
         core.saveState('branch', branch);
         core.info(`✅🤝 Prepared for handshake`);
     }
