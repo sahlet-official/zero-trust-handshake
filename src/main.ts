@@ -135,8 +135,8 @@ async function checkIfISentHandshake(octokit: OctokitType) {
     const exist = await common.checkIfConfigExists(branch, octokit);
     
     if (!exist) {
-      core.info("❌🤝 Handshake failed");
       core.setOutput('check_status', false);
+      core.setFailed("❌🤝 Handshake failed");
       return;
     }
   }
@@ -212,7 +212,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
     }
     else
     {
-      core.info("❌🤝 Handshake failed");
+      core.setFailed("❌🤝 Handshake failed");
     }
     
   } catch (err: any) {

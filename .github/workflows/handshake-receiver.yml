@@ -23,11 +23,16 @@ jobs:
   request-processing:
     runs-on: ubuntu-latest
     needs: handshake-insurance
-    if: success()
+    if: always()
     steps:
       - name: Log handshake result
         run: |
           echo check_status is ${{ needs.handshake-insurance.outputs.check_status }}
+
+      - name: Process request
+        if: ${{ needs.handshake-insurance.outputs.check_status }} != "true"
+        run: |
+          echo ❌ Request rejected
       
       - name: Process request
         if: ${{ needs.handshake-insurance.outputs.check_status }} == "true"
