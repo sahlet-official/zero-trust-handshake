@@ -114,7 +114,7 @@ async function prepareForHandshake(octokit: OctokitType) {
 }
 
 async function checkIfISentHandshake(octokit: OctokitType) {
-  const token = core.getInput('jwt');
+  const token = core.getInput('token');
   const jwtoken = Buffer.from(token, "base64").toString("utf-8");
   const handshake_receiver = core.getInput('handshake_receiver');
 
@@ -233,7 +233,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
 }
 
 async function extractDataFromToken(octokit: OctokitType) {
-  const token = core.getInput('jwt');
+  const token = core.getInput('token');
   const jwtoken = Buffer.from(token, "base64").toString("utf-8");
 
   let sender = "";
@@ -256,7 +256,7 @@ async function extractDataFromToken(octokit: OctokitType) {
 }
 
 async function cleanup(octokit: OctokitType) {
-  const token = core.getInput('jwt');
+  const token = core.getInput('token');
   const jwtoken = Buffer.from(token, "base64").toString("utf-8");
   const { repo, owner } = github.context.repo;
 
