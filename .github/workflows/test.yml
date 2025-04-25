@@ -23,7 +23,6 @@ jobs:
           destination: "wrong-org/wrong-repo/.github/workflows/handshake-receiver.yml@master"
 
   test01-workflow-call:
-    name: Call other workflow
     needs: test01-wrong-destination
     if: always() && ${{ needs.test01-wrong-destination.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
@@ -48,7 +47,7 @@ jobs:
 
   test02-cleanup-before-handshake:
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ always() }}
 
     outputs:
       token: ${{ steps.handshake.outputs.token }}
@@ -65,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test02-cleanup-before-handshake
-    if: always() && ${{ needs.test02-cleanup-before-handshake.result == 'success' }}
+    if: ${{ always() && needs.test02-cleanup-before-handshake.result == 'success' }}
 
     steps:
       - name: Handshake cleanup
@@ -75,9 +74,8 @@ jobs:
           token: ${{ needs.test02-cleanup-before-handshake.outputs.token }}
 
   test02-workflow-call:
-    name: Call other workflow (it can be workflow in another repo)
     needs: test02-handshake-cleanup
-    if: always() && ${{ needs.test02-handshake-cleanup.result == 'success' }}
+    if: ${{ always() && needs.test02-handshake-cleanup.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
     secrets:
       token: ${{ needs.test02-cleanup-before-handshake.outputs.token }}
@@ -88,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test01-handshake-cleanup
-    if: always() && ${{ needs.test01-handshake-cleanup.result == 'success' }}
+    if: ${{ always() && needs.test01-handshake-cleanup.result == 'success' }}
 
     steps:
       - name: Handshake cleanup
