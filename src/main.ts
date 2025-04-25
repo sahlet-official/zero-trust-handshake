@@ -77,10 +77,13 @@ async function prepareForHandshake(octokit: OctokitType) {
       branch_postfix: branch_postfix
     };
     
-    const token = jwt.sign(payload, privateKey, {
+    let token = jwt.sign(payload, privateKey, {
       algorithm: "ES256",
       expiresIn: `${expiration_time}m`
     });
+
+    //to make it possible to pass it through github job outputs
+    token = Buffer.from(token).toString("base64");
 
     const config: common.Config = {
       public_key: publicKey,
@@ -96,7 +99,7 @@ async function prepareForHandshake(octokit: OctokitType) {
 
     await common.setConfig(branch, octokit, config);
 
-    core.setOutput('token', token);
+    core.setOutput('jwt', token);
     core.saveState('branch', branch);
 
     core.info(`✅🤝 Prepared for handshake`);
