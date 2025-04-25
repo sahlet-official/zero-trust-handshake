@@ -3,12 +3,12 @@ name: Handshake receiver
 on:
   workflow_call:
     inputs:
-      jwt:
-        required: true
-        type: string
       caller:
         required: true
         type: string
+    secrets:
+      jwt:
+        required: true
 
 jobs:
   handshake-insurance:
@@ -16,7 +16,7 @@ jobs:
     if: ${{ inputs.caller }} == "sahlet-official/zero-trust-handshake"
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
-      jwt: ${{ inputs.jwt }}
+      jwt: ${{ secrets.jwt }}
       handshake_receiver: "Example receiver"
 
   request-processing:

@@ -20,7 +20,7 @@ inputs:
     description: "Handshake expiration time in minutes"
     default: "10"
 outputs:
-  jwt:
+  token:
     description: "jwt created on create stage"
   check_status:
     description: "true - checked / false - not checked"
