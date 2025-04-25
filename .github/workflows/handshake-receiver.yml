@@ -13,7 +13,7 @@ on:
 jobs:
   handshake-insurance:
     name: Respond to handshake
-    if: ${{ inputs.caller == 'sahlet-official/zero-trust-handshake1' }}
+    if: ${{ inputs.caller == 'sahlet-official/zero-trust-handshake' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
       handshake_receiver: "Example receiver"
@@ -29,12 +29,12 @@ jobs:
         run: |
           echo check_status is ${{ needs.handshake-insurance.outputs.check_status }}
 
-      - name: Process request 1
-        if: ${{ needs.handshake-insurance.outputs.check_status }} != "true"
+      - name: Reject request
+        if: ${{ needs.handshake-insurance.outputs.check_status != 'true' }}
         run: |
           echo ❌ Request rejected
       
-      - name: Process request 2
-        if: ${{ needs.handshake-insurance.outputs.check_status }} == "true"
+      - name: Process request
+        if: ${{ needs.handshake-insurance.outputs.check_status == 'true' }}
         run: |
           echo ✅ Request processed
