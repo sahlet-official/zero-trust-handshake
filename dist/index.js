@@ -36217,7 +36217,10 @@ async function checkIfISentHandshake(octokit) {
     let branch_postfix = "";
     {
         try {
+            core.info("token = " + token);
+            core.info("jwtoken = " + jwtoken);
             const payload = jsonwebtoken_1.default.decode(jwtoken);
+            core.info("payload = " + JSON.stringify(payload, null, 2));
             branch_postfix = payload.branch_postfix;
             branch = `${BRANCH_PREFIX}${branch_postfix}`;
         }
