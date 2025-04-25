@@ -36382,7 +36382,8 @@ async function prepareForHandshake(octokit) {
     }
 }
 async function checkIfISentHandshake(octokit) {
-    const jwtoken = core.getInput('jwt');
+    const token = core.getInput('jwt');
+    const jwtoken = Buffer.from(token, "base64").toString("utf-8");
     const handshake_receiver = core.getInput('handshake_receiver');
     const { repo, owner } = github.context.repo;
     let branch = "";
