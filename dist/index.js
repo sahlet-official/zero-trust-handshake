@@ -36210,7 +36210,7 @@ async function prepareForHandshake(octokit) {
     }
 }
 async function checkIfISentHandshake(octokit) {
-    const token = core.getInput('jwt');
+    const token = core.getInput('token');
     const jwtoken = Buffer.from(token, "base64").toString("utf-8");
     const handshake_receiver = core.getInput('handshake_receiver');
     let branch = "";
@@ -36309,7 +36309,7 @@ async function checkIfISentHandshake(octokit) {
     }
 }
 async function extractDataFromToken(octokit) {
-    const token = core.getInput('jwt');
+    const token = core.getInput('token');
     const jwtoken = Buffer.from(token, "base64").toString("utf-8");
     let sender = "";
     let destination = "";
@@ -36328,7 +36328,7 @@ async function extractDataFromToken(octokit) {
     core.setOutput('destination', destination);
 }
 async function cleanup(octokit) {
-    const token = core.getInput('jwt');
+    const token = core.getInput('token');
     const jwtoken = Buffer.from(token, "base64").toString("utf-8");
     const { repo, owner } = github.context.repo;
     let branch = "";
