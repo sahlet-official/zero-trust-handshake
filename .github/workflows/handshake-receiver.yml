@@ -16,8 +16,9 @@ jobs:
     if: ${{ inputs.caller }} == "sahlet-official/zero-trust-handshake"
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
-      jwt: ${{ secrets.jwt }}
       handshake_receiver: "Example receiver"
+    secrets:
+      jwt: ${{ secrets.jwt }}
 
   request-processing:
     runs-on: ubuntu-latest
