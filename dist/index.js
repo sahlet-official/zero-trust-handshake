@@ -36200,8 +36200,7 @@ async function prepareForHandshake(octokit) {
             receivers: [],
         };
         await utils.setConfig(branch, octokit, config);
-        core.setOutput('jwt', token);
-        core.saveState('branch', branch);
+        core.setOutput('token', token);
         core.info(`✅🤝 Prepared for handshake`);
     }
     catch (err) {
@@ -36315,10 +36314,7 @@ async function extractDataFromToken(octokit) {
     let destination = "";
     {
         try {
-            core.info("token = " + token);
-            core.info("jwtoken = " + jwtoken);
             const payload = jsonwebtoken_1.default.decode(jwtoken);
-            core.info("payload = " + JSON.stringify(payload, null, 2));
             sender = payload.sender;
             destination = payload.destination;
         }
