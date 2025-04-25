@@ -36345,7 +36345,7 @@ async function cleanup(octokit) {
     }
     try {
         const config = await utils.getConfig(branch, octokit);
-        core.info(`Receivers were: [${config.receivers.toString()}]`);
+        core.info(`Receivers were: [\n${JSON.stringify(config.receivers, null, 2)}\n]`);
     }
     catch (err) {
         core.error("❌ Cant get receivers from config");
