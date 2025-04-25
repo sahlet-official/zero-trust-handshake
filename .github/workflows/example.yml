@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      jwt: ${{ steps.handshake.outputs.jwt }}
+      token: ${{ steps.handshake.outputs.token }}
 
     steps:
       - name: Prepare for handshake
@@ -24,5 +24,5 @@ jobs:
     if: success()
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
     with:
-      jwt: ${{ needs.prepare-for-handshake.outputs.jwt }}
+      jwt: ${{ needs.prepare-for-handshake.outputs.token }}
       caller: "sahlet-official/zero-trust-handshake"
