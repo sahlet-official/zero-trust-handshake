@@ -23,7 +23,7 @@ jobs:
   request-processing:
     runs-on: ubuntu-latest
     needs: handshake-insurance
-    if: always() # success()
+    if: success() # always()
     steps:
       - name: Log handshake result
         run: |
