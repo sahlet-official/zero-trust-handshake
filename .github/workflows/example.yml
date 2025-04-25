@@ -24,5 +24,6 @@ jobs:
     if: success()
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
     with:
-      jwt: ${{ needs.prepare-for-handshake.outputs.token }}
       caller: "sahlet-official/zero-trust-handshake"
+    secrets:
+      jwt: ${{ needs.prepare-for-handshake.outputs.token }}
