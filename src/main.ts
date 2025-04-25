@@ -110,7 +110,8 @@ async function prepareForHandshake(octokit: OctokitType) {
 }
 
 async function checkIfISentHandshake(octokit: OctokitType) {
-  const jwtoken = core.getInput('jwt');
+  const token = core.getInput('jwt');
+  const jwtoken = Buffer.from(token, "base64").toString("utf-8");
   const handshake_receiver = core.getInput('handshake_receiver');
   const { repo, owner } = github.context.repo;
 
