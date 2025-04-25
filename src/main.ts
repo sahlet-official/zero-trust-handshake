@@ -138,7 +138,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
     
     if (!exist) {
       core.setOutput('check_status', false);
-      core.setFailed("❌🤝 Handshake failed");
+      core.setFailed("❌🤝 Handshake failed, there is no prepared config");
       return;
     }
   }

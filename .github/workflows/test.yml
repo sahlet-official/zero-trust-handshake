@@ -31,7 +31,9 @@ jobs:
 
   test01-handshake-cleanup:
     runs-on: ubuntu-latest
-    needs: [test01-wrong-destination, test01-workflow-call]
+    needs:
+      - test01-wrong-destination
+      - test01-workflow-call
     if: ${{ always() && needs.test01-wrong-destination.result == 'success' }}
 
     steps:
@@ -86,6 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test01-handshake-cleanup
+      - test01-wrong-destination
     if: ${{ always() && needs.test01-handshake-cleanup.result == 'success' }}
 
     steps:
