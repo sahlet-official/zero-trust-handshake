@@ -3,17 +3,40 @@ name: Handshake receiver
 on:
   workflow_call:
     inputs:
-      caller:
-        required: true
-        type: string
     secrets:
       token:
         required: true
 
 jobs:
+  handshake-verification:
+    runs-on: ubuntu-latest
+
+    outputs:
+      sender: ${{ steps.extraction.outputs.sender }}
+      iam_destination: ${{ steps.verification.outputs.iam_destination }}
+
+    steps:
+      - name: Extraction
+        id: extraction
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          mode: "extract"
+          token: "${{ secrets.token }}"
+
+      - name: Verification that I am destination
+        id: verification
+        run: |
+          if [[ "${{ steps.extraction.outputs.sender }}" == "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master" ]]; then
+            echo "iam_destination=true" >> $GITHUB_OUTPUT
+          else
+            echo "iam_destination=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
   handshake-insurance:
     name: Respond to handshake
-    if: ${{ inputs.caller == 'sahlet-official/zero-trust-handshake' }}
+    needs: handshake-verification
+    if: success() && ${{ needs.handshake-verification.outputs.iam_destination == 'true' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
       handshake_receiver: "Example receiver"
