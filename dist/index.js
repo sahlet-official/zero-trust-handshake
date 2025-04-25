@@ -36230,7 +36230,7 @@ async function checkIfISentHandshake(octokit) {
         const exist = await utils.checkIfConfigExists(branch, octokit);
         if (!exist) {
             core.setOutput('check_status', false);
-            core.setFailed("❌🤝 Handshake failed");
+            core.setFailed("❌🤝 Handshake failed, there is no prepared config");
             return;
         }
     }
