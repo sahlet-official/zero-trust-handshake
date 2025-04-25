@@ -33,6 +33,7 @@ jobs:
         if: ${{ needs.handshake-insurance.outputs.check_status != 'true' }}
         run: |
           echo ❌ Request rejected
+          exit 1
       
       - name: Process request
         if: ${{ needs.handshake-insurance.outputs.check_status == 'true' }}
