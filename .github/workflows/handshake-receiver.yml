@@ -26,7 +26,7 @@ jobs:
       - name: Verification that I am destination
         id: verification
         run: |
-          if [[ "${{ steps.extraction.outputs.sender }}" == "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master" ]]; then
+          if [[ "${{ steps.extraction.outputs.destination }}" == "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master" ]]; then
             echo "iam_destination=true" >> $GITHUB_OUTPUT
           else
             echo "iam_destination=false" >> $GITHUB_OUTPUT
