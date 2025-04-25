@@ -2,7 +2,7 @@ name: Handshake receiver
 
 on:
   workflow_call:
-    inputs:
+    # inputs:
     secrets:
       token:
         required: true
