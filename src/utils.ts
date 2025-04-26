@@ -12,6 +12,7 @@ export type ReceiverInfo = {
 
 export type Config = {
   public_key: string;
+  destination: string;
   locked: boolean;
   usage_count: number;
   max_usage_count: number;
@@ -24,8 +25,6 @@ export type Config = {
 
 export type Payload = {
   branch_postfix: string;
-  sender: string;
-  destination: string;
 };
 
 export function randomString(length: number): string {

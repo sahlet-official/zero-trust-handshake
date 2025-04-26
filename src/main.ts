@@ -13,14 +13,17 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
 async function prepareForHandshake(octokit: OctokitType) {
-  const max_usage_count = Number(core.getInput('max_usage_count'));
+  const max_usage_count = 1; //Number(core.getInput('max_usage_count'));
   const expiration_time = Number(core.getInput('expiration_time'));
-  const sender = core.getInput('sender');
   const destination = core.getInput('destination');
   const { repo, owner } = github.context.repo;
 
   let branch = "";
   let branch_postfix = "";
+
+  if (destination === undefined || destination === null || destination.trim() === '') {
+    throw new Error("❌ destination is empty, you have to set destination");
+  }
 
   {
     const { data: repoData } = await octokit.rest.repos.get({
@@ -77,8 +80,6 @@ async function prepareForHandshake(octokit: OctokitType) {
 
     const payload: utils.Payload = {
       branch_postfix: branch_postfix,
-      sender: sender,
-      destination: destination
     };
     
     let token = jwt.sign(payload, privateKey, {
@@ -91,6 +92,7 @@ async function prepareForHandshake(octokit: OctokitType) {
 
     const config: utils.Config = {
       public_key: publicKey,
+      destination: destination,
       locked: false,
       usage_count: 0,
       max_usage_count: max_usage_count,
@@ -115,7 +117,7 @@ async function prepareForHandshake(octokit: OctokitType) {
 async function checkIfISentHandshake(octokit: OctokitType) {
   const token = core.getInput('token');
   const jwtoken = Buffer.from(token, "base64").toString("utf-8");
-  const handshake_receiver = core.getInput('handshake_receiver');
+  const receiver = core.getInput('receiver');
 
   let branch = "";
   let branch_postfix = "";
@@ -127,13 +129,12 @@ async function checkIfISentHandshake(octokit: OctokitType) {
       branch_postfix = payload.branch_postfix;
       branch = `${BRANCH_PREFIX}${branch_postfix}`;
     } catch (err) {
-      core.info("❌🤝 something wrong with token payload");
+      core.info("❌🤝 Handshake failed, something wrong with token payload");
       throw err;
     }
   }
 
   {
-    // check that config exists
     const exist = await utils.checkIfConfigExists(branch, octokit);
     
     if (!exist) {
@@ -169,7 +170,11 @@ async function checkIfISentHandshake(octokit: OctokitType) {
 
     let check_status: boolean = false;
 
-    if (config.usage_count < config.max_usage_count) {
+    if (config.destination !== receiver) {
+      core.info("❌ Receiver doesn't correspond to destination");
+    } else if (config.usage_count >= config.max_usage_count) {
+      core.info("❌ Maximum number of uses reached");
+    } else {
       try {
         /* const payload =  */jwt.verify(jwtoken, config.public_key, { algorithms: ["ES256"] });
         
@@ -178,7 +183,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
         config.usage_count += 1;
 
         const receiverInfo: utils.ReceiverInfo = {
-          receiver_name: handshake_receiver,
+          receiver_name: receiver,
           timestamp: new Date().toISOString(),
         };
 
@@ -187,8 +192,6 @@ async function checkIfISentHandshake(octokit: OctokitType) {
         check_status = true;
 
       } catch (error: any) {
-        core.error(`❌ Token verification failed: ${error.message}`);
-      
         if (error.name === 'TokenExpiredError') {
           core.error("📛 Token expired");
         } else if (error.name === 'JsonWebTokenError') {
@@ -196,12 +199,10 @@ async function checkIfISentHandshake(octokit: OctokitType) {
         } else if (error.name === 'NotBeforeError') {
           core.error("📛 NotBeforeError: Token is not active yet (nbf)");
         } else {
+          core.error(`❌ Token verification failed: ${error.message}`);
           throw error;
         }
       }
-    }
-    else {
-      core.info("❌🤝 Maximum number of uses reached");
     }
 
     config.locked = false;
@@ -229,29 +230,6 @@ async function checkIfISentHandshake(octokit: OctokitType) {
 
     throw err;
   }
-}
-
-async function extractDataFromToken(octokit: OctokitType) {
-  const token = core.getInput('token');
-  const jwtoken = Buffer.from(token, "base64").toString("utf-8");
-
-  let sender = "";
-  let destination = "";
-
-  {
-    try {
-      const payload = jwt.decode(jwtoken) as utils.Payload;
-
-      sender = payload.sender;
-      destination = payload.destination;
-    } catch (err) {
-      core.info("❌🤝 something wrong with token payload");
-      throw err;
-    }
-  }
-
-  core.setOutput('sender', sender);
-  core.setOutput('destination', destination);
 }
 
 async function cleanup(octokit: OctokitType) {
@@ -306,8 +284,6 @@ async function run() {
     await prepareForHandshake(octokit);
   } else if (mode === 'check') {
     await checkIfISentHandshake(octokit);
-  } else if (mode === 'extract') {
-    await extractDataFromToken(octokit);
   } else if (mode === 'cleanup') {
     await cleanup(octokit);
   } else {

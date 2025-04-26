@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_call:
     inputs:
-      handshake_receiver:
+      receiver:
         required: true
         type: string
     secrets:
@@ -31,4 +31,4 @@ jobs:
         with:
           mode: check
           token: ${{ secrets.token }}
-          handshake_receiver: ${{ inputs.handshake_receiver }}
+          receiver: ${{ inputs.handshake_receiver }}

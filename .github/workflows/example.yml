@@ -18,7 +18,6 @@ jobs:
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
         with:
-          sender: "sahlet-official/zero-trust-handshake"
           destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
 
   workflow-call:
@@ -26,6 +25,8 @@ jobs:
     needs: prepare-for-handshake
     if: ${{ success() }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
     secrets:
       token: ${{ needs.prepare-for-handshake.outputs.token }}
 

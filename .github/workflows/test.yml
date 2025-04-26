@@ -19,13 +19,14 @@ jobs:
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
         with:
-          sender: "sahlet-official/zero-trust-handshake"
           destination: "wrong-org/wrong-repo/.github/workflows/handshake-receiver.yml@master"
 
   test01-workflow-call:
     needs: test01-wrong-destination
     if: ${{ always() && needs.test01-wrong-destination.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
     secrets:
       token: ${{ needs.test01-wrong-destination.outputs.token }}
 
@@ -57,7 +58,6 @@ jobs:
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
         with:
-          sender: "sahlet-official/zero-trust-handshake"
           destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
 
   test02-handshake-cleanup:
@@ -79,6 +79,8 @@ jobs:
       - test02-cleanup-before-handshake
     if: ${{ always() && needs.test02-handshake-cleanup.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
     secrets:
       token: ${{ needs.test02-cleanup-before-handshake.outputs.token }}
 
@@ -112,7 +114,6 @@ jobs:
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
         with:
-          sender: "sahlet-official/zero-trust-handshake"
           destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
 
       - name: Damage of token signature
@@ -130,6 +131,8 @@ jobs:
     needs: test04-wrong-signature
     if: ${{ always() && needs.test04-wrong-signature.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
     secrets:
       token: ${{ needs.test04-wrong-signature.outputs.token }}
 
@@ -161,7 +164,6 @@ jobs:
         id: handshake
         uses: sahlet-official/zero-trust-handshake@latest
         with:
-          sender: "sahlet-official/zero-trust-handshake"
           destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
           expiration_time: 0
 
@@ -169,6 +171,8 @@ jobs:
     needs: test05-expiration-time
     if: ${{ always() && needs.test05-expiration-time.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
     secrets:
       token: ${{ needs.test05-expiration-time.outputs.token }}
 
@@ -185,5 +189,44 @@ jobs:
         with:
           mode: cleanup
           token: ${{ needs.test05-expiration-time.outputs.token }}
+
+# ----------------------------------------------------------------------------------------------------------------
+
+  test06-wrong-sender:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+
+    outputs:
+      token: ${{ steps.handshake.outputs.token }}
+
+    steps:
+      - name: Prepare for handshake
+        id: handshake
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
+
+  test06-workflow-call:
+    needs: test06-wrong-sender
+    if: ${{ always() && needs.test06-wrong-sender.result == 'success' }}
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
+    secrets:
+      token: ${{ needs.test06-wrong-sender.outputs.token }}
+
+  test06-handshake-cleanup:
+    runs-on: ubuntu-latest
+    needs:
+      - test06-wrong-sender
+      - test06-workflow-call
+    if: ${{ always() && needs.test06-wrong-sender.result == 'success' }}
+
+    steps:
+      - name: Handshake cleanup
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          mode: cleanup
+          token: ${{ needs.test06-wrong-sender.outputs.token }}
 
 # ----------------------------------------------------------------------------------------------------------------

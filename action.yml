@@ -2,38 +2,28 @@ name: "Zero Trust Handshake"
 description: "Implements automation of authentication of workflow call (needs write access to repo)"
 inputs:
   mode:
-    description: "create/check/extract/cleanup"
+    description: "create/check/cleanup"
     default: "create"
-  sender:
-    description: "sender info - verification info"
-    default: "unknown"
   destination:
-    description: "destination info - verification info"
-    default: "unknown"
-  token:
-    description: "token created on create stage"
+    description: "destination is verification info, use with create mode"
     default: ""
-  handshake_receiver:
-    description: "Info (name) of the service who receives request for handshake"
+  token:
+    description: "token created on create stage, use with check and cleanup mode"
+    default: ""
+  receiver:
+    description: "receiver is verification info, use with check mode"
     default: "unknown"
   github_token:
     description: "GitHub Token"
     default: ${{ github.token }}
-  max_usage_count:
-    description: "Maximum count of this handshake"
-    default: "1"
   expiration_time:
-    description: "Handshake expiration time in minutes"
+    description: "Handshake expiration time in minutes, use with create mode"
     default: "10"
 outputs:
   token:
     description: "token created on create stage"
   check_status:
     description: "true - checked / false - not checked"
-  sender:
-    description: "sender info - result of 'extract' mode"
-  destination:
-    description: "destination info - result of 'extract' mode"
 runs:
   using: "node20"
   main: "dist/index.js"
