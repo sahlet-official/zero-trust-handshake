@@ -36253,8 +36253,6 @@ async function checkIfISentHandshake(octokit) {
     try {
         let config = await utils.getConfig(branch, octokit);
         let check_status = false;
-        core.info(`config = \n${JSON.stringify(config, null, 2)}`);
-        core.info(`receiver = \n${receiver}`);
         if (config.destination !== receiver) {
             core.info("❌ Receiver doesn't correspond to destination");
         }
