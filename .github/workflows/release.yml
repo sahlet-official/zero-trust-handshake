@@ -47,8 +47,8 @@ jobs:
           git tag -a v${{ github.event.inputs.version }} -m "Release v${{ github.event.inputs.version }}"
           git push origin v${{ github.event.inputs.version }}
 
-          git tag -f v0 -m "Release v${{ github.event.inputs.version }}"
-          git push --force origin v0
+          git tag -f v1 -m "Release v${{ github.event.inputs.version }}"
+          git push --force origin v1
 
           git fetch origin --tags
           git tag -f latest -m "Release v${{ github.event.inputs.version }}"
