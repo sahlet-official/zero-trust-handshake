@@ -34,7 +34,7 @@ jobs:
     needs:
       - handshake-insurance-1
       - handshake-insurance-2
-    if: ${{ needs.handshake-insurance-1.outputs.check_status == 'true' || needs.handshake-insurance-2.outputs.check_status == 'true' }}
+    if: ${{ always() && (needs.handshake-insurance-1.outputs.check_status == 'true' || needs.handshake-insurance-2.outputs.check_status == 'true') }}
     steps:
       - name: Process request
         run: |
