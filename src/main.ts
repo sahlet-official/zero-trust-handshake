@@ -5,8 +5,6 @@ import * as utils from'./utils';
 const BRANCH_PREFIX = 'tmp_zero_trust_handshake_branch_';
 const MAX_LOCK_TRIES = 5;
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 type OctokitType = ReturnType<typeof github.getOctokit>;
 
 import crypto from "crypto";
@@ -156,7 +154,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
       }
 
       if (index < (MAX_LOCK_TRIES - 1)) {
-        await sleep(3000);
+        await utils.sleep(3000);
       }
     }
 

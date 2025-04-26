@@ -3,6 +3,8 @@ import * as github from '@actions/github';
 
 type OctokitType = ReturnType<typeof github.getOctokit>;
 
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const CONFIG_FILE = 'tmp_handshake_config_file_123456.json';
 
 export type ReceiverInfo = {
@@ -138,21 +140,55 @@ export async function setConfig(branch: string, octokit: OctokitType, config: Co
   const { repo, owner } = github.context.repo;
   const updatedContent = Buffer.from(JSON.stringify(config, null, 2)).toString('base64');
 
-  try {
-    await octokit.rest.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: CONFIG_FILE,
-      branch,
-      message: `🔄📝 Update config`,
-      content: updatedContent,
-    });
+  const maxTries = 10;
+  let triesCount = 0;
 
-    core.info(`✅📝 Setting config successful`);
+  let fileSha: string | undefined;
 
-  } catch (e: any) {
-    core.info(`❌📝 couldn't set config: ${e.message}`);
-    throw e;
+  while (true) {
+    try {
+      const response = await octokit.rest.repos.getContent({
+        owner,
+        repo,
+        path: CONFIG_FILE,
+        ref: branch,
+      });
+
+      if (!Array.isArray(response.data) && response.data.type === 'file') {
+        fileSha = response.data.sha;
+      }
+    } catch (e: any) {
+      if (e.status === 404) {
+        core.info(`➕🔄📝 Creating config`);
+      } else {
+        throw e;
+      }
+    }
+
+    try {
+      await octokit.rest.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path: CONFIG_FILE,
+        branch,
+        message: `🔄📝 Update config`,
+        content: updatedContent,
+        sha: fileSha,
+      });
+
+      core.info(`✅${fileSha ? '🔄' : '➕'}📝 Config ${fileSha ? 'updated' : 'created'}`);
+
+      break;
+
+    } catch (e: any) {
+      if (e.status === 409 && triesCount++ < maxTries) {
+        core.info(`🔄 Sha expired, retrying...`);
+        await sleep(1000);
+        continue;
+      }
+      core.info(`❌📝 couldn't update config: ${e.message}`);
+      throw e;
+    }
   }
 }
 
