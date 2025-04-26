@@ -230,3 +230,42 @@ jobs:
           token: ${{ needs.test06-wrong-sender.outputs.token }}
 
 # ----------------------------------------------------------------------------------------------------------------
+
+  test07-many-senders:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+
+    outputs:
+      token: ${{ steps.handshake.outputs.token }}
+
+    steps:
+      - name: Prepare for handshake
+        id: handshake
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          destination: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver-many-senders.yml@master"
+
+  test07-workflow-call:
+    needs: test07-many-senders
+    if: ${{ always() && needs.test07-many-senders.result == 'success' }}
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    with:
+      sender: "sahlet-official/zero-trust-handshake"
+    secrets:
+      token: ${{ needs.test07-many-senders.outputs.token }}
+
+  test07-handshake-cleanup:
+    runs-on: ubuntu-latest
+    needs:
+      - test07-many-senders
+      - test07-workflow-call
+    if: ${{ always() && needs.test07-many-senders.result == 'success' }}
+
+    steps:
+      - name: Handshake cleanup
+        uses: sahlet-official/zero-trust-handshake@latest
+        with:
+          mode: cleanup
+          token: ${{ needs.test07-many-senders.outputs.token }}
+
+# ----------------------------------------------------------------------------------------------------------------

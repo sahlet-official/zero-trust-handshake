@@ -1,0 +1,41 @@
+name: Handshake receiver many senders
+
+on:
+  workflow_call:
+    inputs:
+      sender:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+jobs:
+  handshake-insurance-1:
+    name: Respond to handshake 1
+    if: ${{ inputs.sender == 'sahlet-official/zero-trust-handshake' }}
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
+    with:
+      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
+    secrets:
+      token: ${{ secrets.token }}
+
+  handshake-insurance-2:
+    name: Respond to handshake 2
+    if: ${{ inputs.sender == 'different-org/different-repo' }}
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
+    with:
+      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
+    secrets:
+      token: ${{ secrets.token }}
+
+  request-processing:
+    runs-on: ubuntu-latest
+    needs:
+      - handshake-insurance-1
+      - handshake-insurance-2
+    if: ${{ needs.handshake-insurance-1.outputs.check_status == 'true' || needs.handshake-insurance-2.outputs.check_status == 'true' }}
+    steps:
+      - name: Process request
+        run: |
+          echo ✅ Request processed
