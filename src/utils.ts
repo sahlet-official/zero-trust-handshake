@@ -138,27 +138,6 @@ export async function setConfig(branch: string, octokit: OctokitType, config: Co
   const { repo, owner } = github.context.repo;
   const updatedContent = Buffer.from(JSON.stringify(config, null, 2)).toString('base64');
 
-  let fileSha: string | undefined;
-
-  try {
-    const response = await octokit.rest.repos.getContent({
-      owner,
-      repo,
-      path: CONFIG_FILE,
-      ref: branch,
-    });
-
-    if (!Array.isArray(response.data) && response.data.type === 'file') {
-      fileSha = response.data.sha;
-    }
-  } catch (e: any) {
-    if (e.status === 404) {
-      core.info(`➕🔄📝 Creating config`);
-    } else {
-      throw e;
-    }
-  }
-
   try {
     await octokit.rest.repos.createOrUpdateFileContents({
       owner,
@@ -167,13 +146,12 @@ export async function setConfig(branch: string, octokit: OctokitType, config: Co
       branch,
       message: `🔄📝 Update config`,
       content: updatedContent,
-      sha: fileSha,
     });
 
-    core.info(`✅${fileSha ? '🔄' : '➕'}📝 Config ${fileSha ? 'updated' : 'created'}`);
+    core.info(`✅📝 Setting config successful`);
 
   } catch (e: any) {
-    core.info(`❌📝 couldn't update config: ${e.message}`);
+    core.info(`❌📝 couldn't set config: ${e.message}`);
     throw e;
   }
 }
