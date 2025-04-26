@@ -211,7 +211,7 @@ jobs:
     if: ${{ always() && needs.test06-wrong-sender.result == 'success' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
     with:
-      sender: "sahlet-official/zero-trust-handshake"
+      sender: "wrong-org/wrong-repo"
     secrets:
       token: ${{ needs.test06-wrong-sender.outputs.token }}
 
