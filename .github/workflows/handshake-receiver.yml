@@ -16,7 +16,7 @@ jobs:
     if: ${{ inputs.sender == 'sahlet-official/zero-trust-handshake' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
-      receiver: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
     secrets:
       token: ${{ secrets.token }}
 
