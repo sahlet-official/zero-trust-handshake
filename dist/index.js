@@ -36508,26 +36508,6 @@ async function tryLockConfig(branch, octokit) {
 async function setConfig(branch, octokit, config) {
     const { repo, owner } = github.context.repo;
     const updatedContent = Buffer.from(JSON.stringify(config, null, 2)).toString('base64');
-    let fileSha;
-    try {
-        const response = await octokit.rest.repos.getContent({
-            owner,
-            repo,
-            path: exports.CONFIG_FILE,
-            ref: branch,
-        });
-        if (!Array.isArray(response.data) && response.data.type === 'file') {
-            fileSha = response.data.sha;
-        }
-    }
-    catch (e) {
-        if (e.status === 404) {
-            core.info(`➕🔄📝 Creating config`);
-        }
-        else {
-            throw e;
-        }
-    }
     try {
         await octokit.rest.repos.createOrUpdateFileContents({
             owner,
@@ -36536,12 +36516,11 @@ async function setConfig(branch, octokit, config) {
             branch,
             message: `🔄📝 Update config`,
             content: updatedContent,
-            sha: fileSha,
         });
-        core.info(`✅${fileSha ? '🔄' : '➕'}📝 Config ${fileSha ? 'updated' : 'created'}`);
+        core.info(`✅📝 Setting config successful`);
     }
     catch (e) {
-        core.info(`❌📝 couldn't update config: ${e.message}`);
+        core.info(`❌📝 couldn't set config: ${e.message}`);
         throw e;
     }
 }
