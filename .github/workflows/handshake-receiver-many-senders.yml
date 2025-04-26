@@ -16,7 +16,7 @@ jobs:
     if: ${{ inputs.sender == 'sahlet-official/zero-trust-handshake' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
-      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
+      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver-many-senders.yml@master"
     secrets:
       token: ${{ secrets.token }}
 
@@ -25,16 +25,36 @@ jobs:
     if: ${{ inputs.sender == 'different-org/different-repo' }}
     uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-insurance.yml@master
     with:
-      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master"
+      receiver: "sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver-many-senders.yml@master"
     secrets:
       token: ${{ secrets.token }}
 
-  request-processing:
+  common-request-processing:
     runs-on: ubuntu-latest
     needs:
       - handshake-insurance-1
       - handshake-insurance-2
     if: ${{ needs.handshake-insurance-1.outputs.check_status == 'true' || needs.handshake-insurance-2.outputs.check_status == 'true' }}
+    steps:
+      - name: Process request
+        run: |
+          echo ✅ Request processed
+
+  exclusive-request-processing-1:
+    runs-on: ubuntu-latest
+    needs:
+      - handshake-insurance-1
+    if: ${{ needs.handshake-insurance-1.outputs.check_status == 'true'}}
+    steps:
+      - name: Process request
+        run: |
+          echo ✅ Request processed
+
+  exclusive-request-processing-2:
+    runs-on: ubuntu-latest
+    needs:
+      - handshake-insurance-2
+    if: ${{ needs.handshake-insurance-2.outputs.check_status == 'true' }}
     steps:
       - name: Process request
         run: |
