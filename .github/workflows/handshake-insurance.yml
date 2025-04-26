@@ -31,4 +31,4 @@ jobs:
         with:
           mode: check
           token: ${{ secrets.token }}
-          receiver: ${{ inputs.handshake_receiver }}
+          receiver: ${{ inputs.receiver }}

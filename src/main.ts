@@ -170,7 +170,7 @@ async function checkIfISentHandshake(octokit: OctokitType) {
 
     let check_status: boolean = false;
 
-    core.info(`config = \n${JSON.stringify(config.receivers, null, 2)}`);
+    core.info(`config = \n${JSON.stringify(config, null, 2)}`);
     core.info(`receiver = \n${receiver}`);
 
     if (config.destination !== receiver) {
