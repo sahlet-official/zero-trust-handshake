@@ -36120,7 +36120,6 @@ const github = __importStar(__nccwpck_require__(3228));
 const utils = __importStar(__nccwpck_require__(1798));
 const BRANCH_PREFIX = 'tmp_zero_trust_handshake_branch_';
 const MAX_LOCK_TRIES = 5;
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const crypto_1 = __importDefault(__nccwpck_require__(6982));
 const jsonwebtoken_1 = __importDefault(__nccwpck_require__(9653));
 async function prepareForHandshake(octokit) {
@@ -36243,7 +36242,7 @@ async function checkIfISentHandshake(octokit) {
                 break;
             }
             if (index < (MAX_LOCK_TRIES - 1)) {
-                await sleep(3000);
+                await utils.sleep(3000);
             }
         }
         if (!locked) {
@@ -36411,7 +36410,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CONFIG_FILE = void 0;
+exports.CONFIG_FILE = exports.sleep = void 0;
 exports.randomString = randomString;
 exports.getConfig = getConfig;
 exports.tryLockConfig = tryLockConfig;
@@ -36419,6 +36418,8 @@ exports.setConfig = setConfig;
 exports.checkIfConfigExists = checkIfConfigExists;
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+exports.sleep = sleep;
 exports.CONFIG_FILE = 'tmp_handshake_config_file_123456.json';
 function randomString(length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -36508,20 +36509,51 @@ async function tryLockConfig(branch, octokit) {
 async function setConfig(branch, octokit, config) {
     const { repo, owner } = github.context.repo;
     const updatedContent = Buffer.from(JSON.stringify(config, null, 2)).toString('base64');
-    try {
-        await octokit.rest.repos.createOrUpdateFileContents({
-            owner,
-            repo,
-            path: exports.CONFIG_FILE,
-            branch,
-            message: `🔄📝 Update config`,
-            content: updatedContent,
-        });
-        core.info(`✅📝 Setting config successful`);
-    }
-    catch (e) {
-        core.info(`❌📝 couldn't set config: ${e.message}`);
-        throw e;
+    const maxTries = 10;
+    let triesCount = 0;
+    let fileSha;
+    while (true) {
+        try {
+            const response = await octokit.rest.repos.getContent({
+                owner,
+                repo,
+                path: exports.CONFIG_FILE,
+                ref: branch,
+            });
+            if (!Array.isArray(response.data) && response.data.type === 'file') {
+                fileSha = response.data.sha;
+            }
+        }
+        catch (e) {
+            if (e.status === 404) {
+                core.info(`➕🔄📝 Creating config`);
+            }
+            else {
+                throw e;
+            }
+        }
+        try {
+            await octokit.rest.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path: exports.CONFIG_FILE,
+                branch,
+                message: `🔄📝 Update config`,
+                content: updatedContent,
+                sha: fileSha,
+            });
+            core.info(`✅${fileSha ? '🔄' : '➕'}📝 Config ${fileSha ? 'updated' : 'created'}`);
+            break;
+        }
+        catch (e) {
+            if (e.status === 409 && triesCount++ < maxTries) {
+                core.info(`🔄 Sha expired, retrying...`);
+                await (0, exports.sleep)(1000);
+                continue;
+            }
+            core.info(`❌📝 couldn't update config: ${e.message}`);
+            throw e;
+        }
     }
 }
 async function checkIfConfigExists(branch, octokit) {
