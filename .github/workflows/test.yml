@@ -248,7 +248,7 @@ jobs:
   test07-workflow-call:
     needs: test07-many-senders
     if: ${{ always() && needs.test07-many-senders.result == 'success' }}
-    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver.yml@master
+    uses: sahlet-official/zero-trust-handshake/.github/workflows/handshake-receiver-many-senders.yml@master
     with:
       sender: "sahlet-official/zero-trust-handshake"
     secrets:
